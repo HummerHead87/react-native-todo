@@ -60,6 +60,7 @@ export default class App extends Component {
           count={filterItems('ACTIVE', this.state.items).length}
           onFilter={this.handleFilter}
           filter={this.state.filter}
+          onClearComplete={this.handleClearComplete}
         />
       </View>
     );
@@ -71,6 +72,12 @@ export default class App extends Component {
       dataSource: this.state.dataSource.cloneWithRows(itemsDataSource),
       ...otherState
     })
+  }
+
+  handleClearComplete = () => {
+    const newItems = filterItems('ACTIVE', this.state.items)
+
+    this.setSource(newItems, filterItems(this.state.filter, newItems))
   }
 
   handleFilter = (filter) => {

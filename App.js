@@ -38,6 +38,7 @@ export default class App extends Component {
                   key={key}
                   {...value}
                   onComplete={(complete) => this.handleToggleComplete(key, complete)}
+                  onRemove={() => this.handleRemoveItem(key)}
                 />
               )
             }}
@@ -59,6 +60,12 @@ export default class App extends Component {
     })
   }
 
+  handleRemoveItem = (key) => {
+    const newItems = this.state.items.filter((item) => item.key !== key)
+
+    this.setSource(newItems, newItems)
+  }
+
   handleAddItem = () => {
     const { value, items } = this.state
     if (!value) return;
@@ -71,7 +78,6 @@ export default class App extends Component {
         complete: false
       }
     ];
-    console.log('add todo', value)
 
     this.setSource(newItems, newItems, { value: '' });
   }

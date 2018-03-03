@@ -4,6 +4,14 @@ import Header from './header';
 import Footer from './footer';
 import Row from './row';
 
+const filterItems = (filter, items) => {
+  return items.filter((item) => {
+    if (filter === 'ALL') return true
+    if (filter === 'COMPLETED') return item.complete
+    if (filter === "ACTIVE") return !item.complete
+  })
+}
+
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -12,6 +20,7 @@ export default class App extends Component {
 
     this.state = {
       allComplete: false,
+      filter: 'ALL',
       value: '',
       items: [],
       dataSource: ds.cloneWithRows([])
@@ -47,7 +56,10 @@ export default class App extends Component {
             }}
           />
         </View>
-        <Footer />
+        <Footer
+          onFilter={this.handleFilter}
+          filter={this.state.filter}
+        />
       </View>
     );
   }
@@ -60,10 +72,16 @@ export default class App extends Component {
     })
   }
 
+  handleFilter = (filter) => {
+    const {items} = this.state
+
+    this.setSource(items, filterItems(filter, items), {filter})
+  }
+
   handleRemoveItem = (key) => {
     const newItems = this.state.items.filter((item) => item.key !== key)
 
-    this.setSource(newItems, newItems)
+    this.setSource(newItems, filterItems(this.state.filter, newItems))
   }
 
   handleAddItem = () => {
@@ -79,7 +97,7 @@ export default class App extends Component {
       }
     ];
 
-    this.setSource(newItems, newItems, { value: '' });
+    this.setSource(newItems, filterItems(this.state.filter, newItems), { value: '' });
   }
 
   handleToggleComplete = (key, complete) => {
@@ -89,7 +107,7 @@ export default class App extends Component {
       return {...item, complete}
     });
 
-    this.setSource(newItems, newItems);
+    this.setSource(newItems, filterItems(this.state.filter, newItems));
   }
 
   handleToggleAllComplete = () => {
@@ -99,7 +117,7 @@ export default class App extends Component {
       complete
     }))
 
-    this.setSource(newItems, newItems, { allComplete: complete })
+    this.setSource(newItems, filterItems(this.state.filter, newItems), { allComplete: complete })
   }
 }
 

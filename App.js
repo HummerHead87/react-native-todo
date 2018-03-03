@@ -1,16 +1,20 @@
 import React, { Component } from 'react';
-import {  View, Text, StyleSheet, Platform } from 'react-native';
+import {  View, Text, StyleSheet, Platform, ListView, Keyboard } from 'react-native';
 import Header from './header';
 import Footer from './footer';
+import Row from './row';
 
 export default class App extends Component {
   constructor(props) {
     super(props);
 
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+
     this.state = {
       allComplete: false,
       value: '',
       items: [],
+      dataSource: ds.cloneWithRows([])
     }
   }
   render() {
@@ -23,11 +27,36 @@ export default class App extends Component {
           onToggleAllComplete={this.handleToggleAllComplete}
         />
         <View style={styles.content}>
-          <Text>Content</Text>
+          <ListView
+            style={styles.list}
+            enableEmptySections
+            dataSource={this.state.dataSource}
+            onScroll={() => Keyboard.dismiss()}
+            renderRow={({ key, ...value }) => {
+              return (
+                <Row
+                  key={key}
+                  {...value}
+                  onComplete={(complete) => this.handleToggleComplete(key, complete)}
+                />
+              )
+            }}
+            renderSeparator={(sectionId, rowId) => {
+              return <View key={rowId} style={styles.separator} />
+            }}
+          />
         </View>
         <Footer />
       </View>
     );
+  }
+
+  setSource = (items, itemsDataSource, otherState = {}) => {
+    this.setState({
+      items,
+      dataSource: this.state.dataSource.cloneWithRows(itemsDataSource),
+      ...otherState
+    })
   }
 
   handleAddItem = () => {
@@ -44,10 +73,17 @@ export default class App extends Component {
     ];
     console.log('add todo', value)
 
-    this.setState({
-      items: newItems,
-      value: '',
-    })
+    this.setSource(newItems, newItems, { value: '' });
+  }
+
+  handleToggleComplete = (key, complete) => {
+    const newItems = this.state.items.map((item) => {
+      if (item.key !== key) return item;
+
+      return {...item, complete}
+    });
+
+    this.setSource(newItems, newItems);
   }
 
   handleToggleAllComplete = () => {
@@ -56,12 +92,8 @@ export default class App extends Component {
       ...item,
       complete
     }))
-    console.table(newItems);
 
-    this.setState({
-      items: newItems,
-      allComplete: complete
-    })
+    this.setSource(newItems, newItems, { allComplete: complete })
   }
 }
 
@@ -78,5 +110,12 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  list: {
+    backgroundColor: '#fff',
+  },
+  separator: {
+    borderWidth: 1,
+    borderColor: '#f5f5f5',
   }
 })

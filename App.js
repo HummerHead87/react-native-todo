@@ -48,6 +48,8 @@ export default class App extends Component {
                 <Row
                   key={key}
                   {...value}
+                  onUpdate={(text) => this.handleUpdateText(key, text)}
+                  onToggleEdit={(editing) => this.handleToggleEditing(key, editing)}
                   onComplete={(complete) => this.handleToggleComplete(key, complete)}
                   onRemove={() => this.handleRemoveItem(key)}
                 />
@@ -85,6 +87,32 @@ export default class App extends Component {
         this.setState({loading: false})
       }
     })
+  }
+
+  handleUpdateText = (key, text) => {
+    const newItems = this.state.items.map((item) => {
+      if (item.key !== key) return item
+
+      return {
+        ...item,
+        text
+      }
+    })
+
+    this.setSource(newItems, filterItems(this.state.filter, newItems))
+  }
+
+  handleToggleEditing = (key, editing) => {
+    const newItems = this.state.items.map((item) => {
+      if (item.key !== key) return item
+
+      return {
+        ...item,
+        editing
+      }
+    })
+
+    this.setSource(newItems, filterItems(this.state.filter, newItems))
   }
 
   setSource = (items, itemsDataSource, otherState = {}) => {
